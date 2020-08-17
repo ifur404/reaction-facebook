@@ -21,6 +21,6 @@ apakah bisa di jalankan di android ?
 * bisa menggunakan termux
 
 bagaimana ambil cookie facebooknya ?
-* kalau saya login ke mbasic.facebook.com di desktop trus masuk inspect element => network => mbasic.facebook.com copy yang ambil sebagai modejs fecth => trus ambil header cookies.
+* kalau saya login ke mbasic.facebook.com di desktop trus masuk inspect element => network => mbasic.facebook.com copy yang ambil sebagai modejs fetch => trus ambil header cookies.
 
 ya udah sih gtuh aja, klau ada pertanyaan lain jangan kontak saya :p
