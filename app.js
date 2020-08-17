@@ -1,5 +1,6 @@
 const axios = require('axios');
-const cheerio = require('cheerio')
+const cheerio = require('cheerio');
+const fs = require('fs')
 require('dotenv').config()
 
 const facebookurl = "https://mbasic.facebook.com";
@@ -69,8 +70,10 @@ async function reaction_select(url) {
 
 async function execute_reaction(url) {
   try {
+    const id = extrastr(url_now)
     const response = await axios.get(facebookurl+''+url,header_set());
-    console.log("execute react "+extrastr(url_now)+" sukses ");
+    console.log(`execute react ${id} sukses `);
+    fs.appendFileSync('logs.txt',id+"|")
     url_now = facebookurl+''+url
     if(url_terakhir !== ""){
       url_terakhir = facebookurl
@@ -93,10 +96,12 @@ function list_link(res){
     $('a').each((i, link) => {
       const href = link.attribs.href;
       if(href.includes('reactions/picker')){
-        if(href.includes("page_id_type")){
-          hasil_arr.push(href);
-        }else{
-          hasil_arr_friend.push(href)
+        if(!fs.readFileSync('logs.txt').toString().includes(extrastr(href))){
+          if(href.includes("page_id_type")){
+            hasil_arr.push(href);
+          }else{
+            hasil_arr_friend.push(href)
+          }
         }
       }
     });
