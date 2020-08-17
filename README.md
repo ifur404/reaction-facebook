@@ -1,5 +1,5 @@
 # reaction-facebook
-robot untuk melakukan reaction status facebook
+robot untuk melakukan reaction status facebook.
 saat ini hanya bisa random reaction.
 
 # kebutuhan
