@@ -2,11 +2,12 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs')
 require('dotenv').config()
-
 const facebookurl = "https://mbasic.facebook.com";
 let url_terakhir = "";
 let url_now = facebookurl;
 const cookies = process.env.COOKIES
+const type_reaction = process.env.TYPE
+const file_log = "logs.txt";
 
 function extrastr(mystr){
   if(mystr.match(/\?ft_id=(.*)&origin_uri=/)){
@@ -44,37 +45,37 @@ function header_set(){
 }
 
 async function getHome() {
-  console.log("gethome "+url_now);
+  console.log(`${arguments.callee.name} = ${url_now}`);
   try {
     url_terakhir = "";
     const response = await axios.get(facebookurl,header_set());
     url_now = facebookurl
     list_link(response.data);
   } catch (error) {
-    console.error(error.message);
+    console.log(`${arguments.callee.name} = ${error.message}`);
   }
 }
 
 async function reaction_select(url) {
   try {
-    const response = await axios.get(facebookurl+''+url,header_set());
-    url_now = facebookurl+''+url
+    const response = await axios.get(facebookurl+url,header_set());
+    url_now = facebookurl+url
     if(url_terakhir !== ""){
       url_terakhir = facebookurl
     }
     proses_reac(response.data);
   } catch (error) {
-    console.error(error.message);
+    console.log(`${arguments.callee.name} = ${error.message}`);
   }
 }
 
 async function execute_reaction(url) {
   try {
     const id = extrastr(url_now)
-    const response = await axios.get(facebookurl+''+url,header_set());
-    console.log(`execute react ${id} sukses `);
-    fs.appendFileSync('logs.txt',id+"|")
-    url_now = facebookurl+''+url
+    const response = await axios.get(facebookurl+url,header_set());
+    console.log(`${arguments.callee.name} ${id} sukses`);
+    fs.appendFileSync(file_log,id+"|")
+    url_now = facebookurl+url
     if(url_terakhir !== ""){
       url_terakhir = facebookurl
     }
@@ -82,25 +83,27 @@ async function execute_reaction(url) {
       list_link(response.data);
     }, getRndInteger(3000,30000));
   } catch (error) {
-    console.error(error.message);
+    console.log(`${arguments.callee.name} = ${error.message}`);
   }
 }
 
 function list_link(res){
-  if(res.includes(" Masuk atau Daftar")){
-    console.log("list_link cookie hilang");
+  if(res.includes("Masuk atau Daftar") || res.includes("Masuk ke Facebook")){
+    console.log(`${arguments.callee.name} : cookie hilang`);
   }else{
     const $ = cheerio.load(res);
     var hasil_arr = []
     var hasil_arr_friend = []
     $('a').each((i, link) => {
       const href = link.attribs.href;
-      if(href.includes('reactions/picker')){
-        if(!fs.readFileSync('logs.txt').toString().includes(extrastr(href))){
-          if(href.includes("page_id_type")){
-            hasil_arr.push(href);
-          }else{
-            hasil_arr_friend.push(href)
+      if(href){
+        if(href.includes('reactions/picker')){
+          if(!fs.readFileSync(file_log).toString().includes(extrastr(href))){
+            if(href.includes("page_id_type")){
+              hasil_arr.push(href);
+            }else{
+              hasil_arr_friend.push(href)
+            }
           }
         }
       }
@@ -110,7 +113,10 @@ function list_link(res){
     }else if(hasil_arr.length > 0){
       reaction_select(hasil_arr[Math.floor(Math.random() * hasil_arr.length)])
     }else{
-      getHome()
+      console.log(`${arguments.callee.name} = beranda tidak ada yang perlu di reaction, bot akan di jalankan lagi dalam 30 detik`)
+      setTimeout(()=>{
+        getHome()
+      },30000)
     }
   }
 }
@@ -124,11 +130,16 @@ function proses_reac(res){
       hasil_arr.push(href);
     }
   });
-  execute_reaction(hasil_arr[Math.floor(Math.random() * hasil_arr.length)])
+  if(type_reaction === "7"){
+    execute_reaction(hasil_arr[Math.floor(Math.random() * hasil_arr.length)])
+  }else{
+    execute_reaction(hasil_arr[type_reaction])
+  }
 }
 
 function getRndInteger(min, max) {
   return Math.floor(Math.random() * (max - min) ) + min;
 }
 
+fs.closeSync(fs.openSync(file_log, 'a'))
 getHome()
